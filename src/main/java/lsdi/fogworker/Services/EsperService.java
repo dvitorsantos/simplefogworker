@@ -2,6 +2,8 @@ package lsdi.fogworker.Services;
 
 import com.espertech.esper.common.client.EPCompiled;
 import com.espertech.esper.common.client.configuration.Configuration;
+import com.espertech.esper.common.client.util.EventTypeBusModifier;
+import com.espertech.esper.common.client.util.NameAccessModifier;
 import com.espertech.esper.compiler.client.CompilerArguments;
 import com.espertech.esper.compiler.client.EPCompileException;
 import com.espertech.esper.compiler.client.EPCompiler;
@@ -9,8 +11,9 @@ import com.espertech.esper.compiler.client.EPCompilerProvider;
 import com.espertech.esper.runtime.client.*;
 import lombok.Data;
 import lsdi.fogworker.DataTransferObjects.DeployRequest;
-import lsdi.fogworker.Models.Event;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Data
 @Service
@@ -20,12 +23,20 @@ public class EsperService {
     private EPCompiler compiler;
     private EPRuntime runtime;
 
+    private static EsperService instance;
+
     public EsperService() {
         configuration = new Configuration();
-        configuration.getCommon().addEventType("Event", Event.class);
+        configuration.getCompiler().getByteCode().setAccessModifierEventType(NameAccessModifier.PUBLIC);
+        configuration.getCompiler().getByteCode().setBusModifierEventType(EventTypeBusModifier.BUS);
         arguments = new CompilerArguments(configuration);
         compiler = EPCompilerProvider.getCompiler();
         runtime = EPRuntimeProvider.getDefaultRuntime(configuration);
+    }
+
+    public static EsperService getInstance() {
+        if (instance == null) instance = new EsperService();
+        return instance;
     }
 
     public EPCompiled compile(String epl) throws EPCompileException {
@@ -40,8 +51,8 @@ public class EsperService {
         runtime.getDeploymentService().undeploy(deploymentId);
     }
 
-    public void sendEvent() {
-        runtime.getEventService().sendEventBean(new Event("1.2", "3.4"), "Event");
+    public void sendEvent(Map<String, Object> event, String name) {
+        runtime.getEventService().sendEventMap(event, name);
     }
 
     public EPStatement getStatement(String deploymentId, String statementName) {
@@ -50,10 +61,25 @@ public class EsperService {
 
     public static String buildEPL(DeployRequest deployRequest) {
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("create map schema ");
+        stringBuilder.append(deployRequest.getEventType());
+        stringBuilder.append(" as (");
+
+        boolean isFirstEntry = true;
+        for (Map.Entry<String, String> entry : deployRequest.getEventAttributes().entrySet()) {
+            if (!isFirstEntry) stringBuilder.append(", ");
+            stringBuilder.append(entry.getKey());
+            stringBuilder.append(" ");
+            stringBuilder.append(entry.getValue());
+            isFirstEntry = false;
+        }
+
+        stringBuilder.append(");\n");
+
         stringBuilder.append("@Name('");
-        stringBuilder.append(deployRequest.getName());
+        stringBuilder.append(deployRequest.getRuleName());
         stringBuilder.append("')\n");
-        stringBuilder.append(deployRequest.getRule());
+        stringBuilder.append(deployRequest.getRuleDefinition());
         stringBuilder.append(";\n");
         return stringBuilder.toString();
     }
