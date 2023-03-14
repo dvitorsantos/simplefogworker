@@ -22,7 +22,6 @@ public class EsperService {
     private CompilerArguments arguments;
     private EPCompiler compiler;
     private EPRuntime runtime;
-
     private static EsperService instance;
 
     public EsperService() {

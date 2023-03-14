@@ -1,5 +1,6 @@
 package lsdi.fogworker.DataTransferObjects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeployResponse {
-    public String id;
-    public String name;
-    public String rule;
-    public String status;
+    @JsonProperty("deploy_uuid")
+    public String deployUuid;
+    @JsonProperty("rule_uuid")
+    public String ruleUuid;
 }

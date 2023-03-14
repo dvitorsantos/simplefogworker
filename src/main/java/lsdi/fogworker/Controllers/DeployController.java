@@ -9,10 +9,7 @@ import lsdi.fogworker.DataTransferObjects.DeployResponse;
 import lsdi.fogworker.Listeners.EventListener;
 import lsdi.fogworker.Services.EsperService;
 import lsdi.fogworker.Services.MqttService;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -47,10 +44,19 @@ public class DeployController {
 
             return new DeployResponse(
                     epDeployment.getDeploymentId(),
-                    deployRequest.getRuleName(),
-                    deployRequest.getRuleDefinition(),
-                    "Deployed successfully.");
+                    deployRequest.getRuleUuid());
         } catch (EPCompileException | EPDeployException exception) {
+            exception.printStackTrace();
+            return "Something went wrong.";
+        }
+    }
+
+    @DeleteMapping("/undeploy/{deploymentId}")
+    public Object undeploy(@PathVariable String deploymentId) {
+        try {
+            esperService.undeploy(deploymentId);
+            return "Undeploy successfully.";
+        } catch (EPUndeployException exception) {
             exception.printStackTrace();
             return "Something went wrong.";
         }
