@@ -1,7 +1,11 @@
 package lsdi.fogworker.Services;
 
 import org.eclipse.paho.client.mqttv3.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MqttService {
     private static MqttService instance;
 
@@ -9,9 +13,12 @@ public class MqttService {
 
     private MqttClient client;
 
-    private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
+    @Value("${mosquitto.url}")
+    private String mosquittoUrl;
 
-    private static final String MQTT_CLIENT_ID = "fogworker";
+    @Value("${mosquitto.clientid}")
+    private String clientUuid;
+
 
     private MqttService() {
         options = new MqttConnectOptions();
@@ -21,7 +28,7 @@ public class MqttService {
         options.setKeepAliveInterval(30);
 
         try {
-            client = new MqttClient(MQTT_BROKER_URL, MQTT_CLIENT_ID);
+            client = new MqttClient("tcp://localhost:1883", "fogworker");
             client.connect(options);
         } catch (MqttException e) {
             e.printStackTrace();
@@ -47,13 +54,5 @@ public class MqttService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public String getMqttClientId() {
-        return MQTT_CLIENT_ID;
-    }
-
-    public String getMqttBrokerUrl() {
-        return MQTT_BROKER_URL;
     }
 }

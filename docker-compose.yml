@@ -1,0 +1,17 @@
+version: "3"
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+  fogworker:
+    build: .
+    container_name: fogworker
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    links:
+      - mosquitto

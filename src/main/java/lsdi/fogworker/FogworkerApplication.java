@@ -1,6 +1,7 @@
 package lsdi.fogworker;
 
 import lsdi.fogworker.DataTransferObjects.IoTGatewayRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -14,6 +15,8 @@ import java.util.Arrays;
 
 @SpringBootApplication
 public class FogworkerApplication {
+	@Value("${iotcataloger.url}")
+	private String iotCatalogerUrl;
 
 	public static void main(String[] args) {
 		SpringApplication.run(FogworkerApplication.class, args);
@@ -25,8 +28,6 @@ public class FogworkerApplication {
 	}
 
 	private void selfRegister() {
-		String iotCatalogerUrl = "http://localhost:8280";
-
 		RestTemplate restTemplate = new RestTemplate();
 
 		IoTGatewayRequest request = new IoTGatewayRequest();
