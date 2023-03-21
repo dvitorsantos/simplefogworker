@@ -18,7 +18,6 @@ import java.util.Map;
 public class DeployController {
     EsperService esperService = EsperService.getInstance();
     MqttService mqttService = MqttService.getInstance();
-
     ObjectMapper mapper = new ObjectMapper();
 
     @PostMapping("/deploy")

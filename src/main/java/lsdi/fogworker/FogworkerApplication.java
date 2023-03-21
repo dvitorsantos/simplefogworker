@@ -1,6 +1,9 @@
 package lsdi.fogworker;
 
 import lsdi.fogworker.DataTransferObjects.IoTGatewayRequest;
+import lsdi.fogworker.DataTransferObjects.TaggedObjectRequest;
+import lsdi.fogworker.Services.IotCatalogerService;
+import lsdi.fogworker.Services.TaggerService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,15 +11,24 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @SpringBootApplication
 public class FogworkerApplication {
+	@Value("${fogworker.uuid}")
+	private String fogworkerUuid;
+	@Value("${fogworker.name}")
+	private String fogworkerName;
+	@Value("${fogworker.url}")
+	private String fogworkerUrl;
 	@Value("${iotcataloger.url}")
 	private String iotCatalogerUrl;
+	@Value("${tagger.url}")
+	private String taggerUrl;
 
 	public static void main(String[] args) {
 		SpringApplication.run(FogworkerApplication.class, args);
@@ -25,22 +37,31 @@ public class FogworkerApplication {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationEvent() {
 		selfRegister();
+//		selfTag();
 	}
 
 	private void selfRegister() {
-		RestTemplate restTemplate = new RestTemplate();
-
+		IotCatalogerService iotCatalogerService = new IotCatalogerService(iotCatalogerUrl);
 		IoTGatewayRequest request = new IoTGatewayRequest();
-		request.setUuid("fogworker");
-		request.setDistinguishedName("fogworker");
-		request.setUrl("http://localhost:6969/");
+		request.setUuid(fogworkerUuid);
+		request.setDistinguishedName(fogworkerName);
+		request.setUrl(fogworkerUrl);
 		request.setLatitude(1.0);
 		request.setLongitude(1.0);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("X-SSL-Client-DN", request.getDistinguishedName());
+		iotCatalogerService.registerGateway(request);
+	}
 
-		HttpEntity<Object> entity = new HttpEntity<>(request, headers);
-		restTemplate.postForObject(iotCatalogerUrl + "/gateway", entity, IoTGatewayRequest.class);
+	private void selfTag() {
+		TaggerService taggerService = new TaggerService(taggerUrl);
+		TaggedObjectRequest request = new TaggedObjectRequest();
+		request.setUuid(fogworkerUuid);
+		request.setType("FogNode");
+
+		Map<String, String> tags = new HashMap<>();
+		tags.put("type", "fognode");
+
+		request.setTags(tags);
+		taggerService.tagObject(request);
 	}
 }
