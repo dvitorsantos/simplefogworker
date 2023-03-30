@@ -10,7 +10,7 @@ import com.espertech.esper.compiler.client.EPCompiler;
 import com.espertech.esper.compiler.client.EPCompilerProvider;
 import com.espertech.esper.runtime.client.*;
 import lombok.Data;
-import lsdi.fogworker.DataTransferObjects.DeployRequest;
+import lsdi.fogworker.DataTransferObjects.RuleRequestResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -58,14 +58,14 @@ public class EsperService {
         return runtime.getDeploymentService().getStatement(deploymentId, statementName);
     }
 
-    public static String buildEPL(DeployRequest deployRequest) {
+    public static String buildEPL(RuleRequestResponse rule) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("create map schema ");
-        stringBuilder.append(deployRequest.getEventType());
+        stringBuilder.append(rule.getEventType());
         stringBuilder.append(" as (");
 
         boolean isFirstEntry = true;
-        for (Map.Entry<String, String> entry : deployRequest.getEventAttributes().entrySet()) {
+        for (Map.Entry<String, String> entry : rule.getEventAttributes().entrySet()) {
             if (!isFirstEntry) stringBuilder.append(", ");
             stringBuilder.append(entry.getKey());
             stringBuilder.append(" ");
@@ -76,9 +76,9 @@ public class EsperService {
         stringBuilder.append(");\n");
 
         stringBuilder.append("@Name('");
-        stringBuilder.append(deployRequest.getRuleName());
+        stringBuilder.append(rule.getName());
         stringBuilder.append("')\n");
-        stringBuilder.append(deployRequest.getRuleDefinition());
+        stringBuilder.append(rule.getDefinition());
         stringBuilder.append(";\n");
         return stringBuilder.toString();
     }
