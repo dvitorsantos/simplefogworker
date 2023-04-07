@@ -79,9 +79,6 @@ public class DeployService {
                         }
                     }).start();
                 });
-
-                //publish deploy request to edge
-                System.out.println("Publishing deploy request to edge " + edgeRuleDeployRequest.getHostUuid());
             });
 
             try {

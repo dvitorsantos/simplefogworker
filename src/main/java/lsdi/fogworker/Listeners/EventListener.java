@@ -23,7 +23,7 @@ public class EventListener implements UpdateListener {
     public void update(EventBean[] newData, EventBean[] oldEvents, EPStatement statement, EPRuntime runtime) {
         String topic = "cdpo/event/" + ruleUuid;
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println("EVENTO NOVO: " + newData[0].getUnderlying());
+
         try {
             if (webhookUrl != null) restTemplate.postForObject(webhookUrl, mapper.writeValueAsString((newData[0]).getUnderlying()), String.class);
             else mqttService.publish(topic, mapper.writeValueAsBytes((newData[0]).getUnderlying()));
