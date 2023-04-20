@@ -6,6 +6,9 @@ import com.espertech.esper.runtime.client.EPDeployException;
 import com.espertech.esper.runtime.client.EPDeployment;
 import com.espertech.esper.runtime.client.EPStatement;
 import com.espertech.esper.runtime.client.EPUndeployException;
+import com.espertech.esper.runtime.client.util.Adapter;
+import com.espertech.esper.runtime.client.util.AdapterState;
+import com.espertech.esper.runtime.client.util.AdapterStateManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lsdi.fogworker.DataTransferObjects.Deploy.DeployFogRequest;
@@ -56,17 +59,19 @@ public class DeployService {
         deployFogRequest.getEdgeRulesDeployRequests().forEach(edgeRuleDeployRequest -> {
             edgeRuleDeployRequest.getEdgeRules().forEach(edgeRule -> {
                 //subscribe to receive events from edge
-                mqttService.subscribe("cdpo/event/" + edgeRule.getUuid(), (topic, message) -> {
-                    for (RuleRequestResponse fogRule : deployFogRequest.getFogRules()) {
-                        new Thread(() -> {
-                            try {
-                                esperService.sendEvent(mapper.readValue(message.getPayload(), Map.class), fogRule.getEventType());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }).start();
-                    }
-                });
+
+                if (!deployFogRequest.getFogRules().isEmpty())
+                    mqttService.subscribe("cdpo/event/" + edgeRule.getEventType(), (topic, message) -> {
+                        for (RuleRequestResponse fogRule : deployFogRequest.getFogRules()) {
+                            new Thread(() -> {
+                                try {
+                                    esperService.sendEvent(mapper.readValue(message.getPayload(), Map.class), fogRule.getEventType());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }).start();
+                        }
+                    });
 
                 //subscribe deploy status of edge
                 mqttService.subscribe("/deploy/" + edgeRule.getUuid(), (topic, message) -> {
