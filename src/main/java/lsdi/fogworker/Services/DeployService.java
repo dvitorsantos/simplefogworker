@@ -86,11 +86,13 @@ public class DeployService {
                 });
             });
 
-            try {
-                mqttService.publish("/deploy", mapper.writeValueAsBytes(edgeRuleDeployRequest));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            new Thread(() -> {
+                try {
+                    mqttService.publish("/deploy/" + edgeRuleDeployRequest.getHostUuid(), mapper.writeValueAsBytes(edgeRuleDeployRequest));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
         });
 
         return deployResponses;
