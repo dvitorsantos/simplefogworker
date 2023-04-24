@@ -13,8 +13,7 @@ public class CDPOService {
         this.url = url;
         this.restTemplate = new RestTemplate();
     }
-
     public void updateDeploy(DeployResponse deployResponse) {
-        restTemplate.put(url + "/deploy/" + deployResponse.getRuleUuid(), deployResponse, DeployResponse.class);
+        restTemplate.put(url + "/deploy/" + deployResponse.getHostUuid() + "/" + deployResponse.getRuleUuid(), deployResponse, DeployResponse.class);
     }
 }

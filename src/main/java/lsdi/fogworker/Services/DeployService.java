@@ -40,6 +40,7 @@ public class DeployService {
                     epStatement.addListener(new EventListener(fogRule.getUuid(), fogRule.getWebhookUrl()));
 
                     DeployResponse deployResponse = new DeployResponse(
+                            deployFogRequest.getHostUuid(),
                             epDeployment.getDeploymentId(),
                             fogRule.getUuid(),
                             "DONE");
@@ -47,6 +48,7 @@ public class DeployService {
                 } catch (EPCompileException | EPDeployException exception) {
                     exception.printStackTrace();
                     DeployResponse deployResponse = new DeployResponse(
+                            deployFogRequest.getHostUuid(),
                             null,
                             fogRule.getUuid(),
                             "ERROR");
