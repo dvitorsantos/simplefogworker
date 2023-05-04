@@ -43,7 +43,7 @@ public class DeployService {
                             deployFogRequest.getHostUuid(),
                             epDeployment.getDeploymentId(),
                             fogRule.getUuid(),
-                            "DONE");
+                            "DEPLOYED");
                     cdpoService.updateDeploy(deployResponse);
                 } catch (EPCompileException | EPDeployException exception) {
                     exception.printStackTrace();
