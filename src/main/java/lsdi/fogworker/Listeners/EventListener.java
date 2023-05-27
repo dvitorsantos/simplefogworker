@@ -12,16 +12,16 @@ import org.springframework.web.client.RestTemplate;
 public class EventListener implements UpdateListener {
     MqttService mqttService = MqttService.getInstance();
     RestTemplate restTemplate = new RestTemplate();
-    private final String ruleUuid;
+    private final String ruleName;
     private final String webhookUrl;
-    public EventListener(String ruleUuid, String webhookUrl) {
-        this.ruleUuid = ruleUuid;
+    public EventListener(String ruleName, String webhookUrl) {
+        this.ruleName = ruleName;
         this.webhookUrl = webhookUrl;
     }
 
     @Override
     public void update(EventBean[] newData, EventBean[] oldEvents, EPStatement statement, EPRuntime runtime) {
-        String topic = "cdpo/event/" + ruleUuid;
+        String topic = "cdpo/event/" + ruleName;
         ObjectMapper mapper = new ObjectMapper();
 
         try {

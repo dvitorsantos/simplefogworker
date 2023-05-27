@@ -13,6 +13,8 @@ import lombok.Data;
 import lsdi.fogworker.DataTransferObjects.RuleRequestResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -25,12 +27,12 @@ public class EsperService {
     private static EsperService instance;
 
     public EsperService() {
-        configuration = new Configuration();
-        configuration.getCompiler().getByteCode().setAccessModifierEventType(NameAccessModifier.PUBLIC);
-        configuration.getCompiler().getByteCode().setBusModifierEventType(EventTypeBusModifier.BUS);
-        arguments = new CompilerArguments(configuration);
-        compiler = EPCompilerProvider.getCompiler();
-        runtime = EPRuntimeProvider.getDefaultRuntime(configuration);
+        this.configuration = new Configuration();
+        this.configuration.getCompiler().getByteCode().setAccessModifierEventType(NameAccessModifier.PUBLIC);
+        this.configuration.getCompiler().getByteCode().setBusModifierEventType(EventTypeBusModifier.BUS);
+        this.arguments = new CompilerArguments(configuration);
+        this.compiler = EPCompilerProvider.getCompiler();
+        this.runtime = EPRuntimeProvider.getDefaultRuntime(configuration);
     }
 
     public static EsperService getInstance() {
@@ -58,28 +60,36 @@ public class EsperService {
         return runtime.getDeploymentService().getStatement(deploymentId, statementName);
     }
 
-    public static String buildEPL(RuleRequestResponse rule) {
+    public String buildEPL(List<RuleRequestResponse> rules) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("create map schema ");
-        stringBuilder.append(rule.getEventType());
-        stringBuilder.append(" as (");
+        ArrayList<String> eventTypes = new ArrayList<>();
 
-        boolean isFirstEntry = true;
-        for (Map.Entry<String, String> entry : rule.getEventAttributes().entrySet()) {
-            if (!isFirstEntry) stringBuilder.append(", ");
-            stringBuilder.append(entry.getKey());
-            stringBuilder.append(" ");
-            stringBuilder.append(entry.getValue());
-            isFirstEntry = false;
+        for (RuleRequestResponse rule : rules) {
+            if (!eventTypes.contains(rule.getEventType())) {
+                eventTypes.add(rule.getEventType());
+
+                stringBuilder.append("create map schema ");
+                stringBuilder.append(rule.getEventType());
+                stringBuilder.append(" as (");
+
+                boolean isFirstEntry = true;
+                for (Map.Entry<String, String> entry : rule.getEventAttributes().entrySet()) {
+                    if (!isFirstEntry) stringBuilder.append(", ");
+                    stringBuilder.append(entry.getKey());
+                    stringBuilder.append(" ");
+                    stringBuilder.append(entry.getValue());
+                    isFirstEntry = false;
+                }
+                stringBuilder.append(");\n");
+            }
+
+            stringBuilder.append("@Name('");
+            stringBuilder.append(rule.getName());
+            stringBuilder.append("')\n");
+            stringBuilder.append(rule.getDefinition());
+            stringBuilder.append(";\n");
         }
 
-        stringBuilder.append(");\n");
-
-        stringBuilder.append("@Name('");
-        stringBuilder.append(rule.getName());
-        stringBuilder.append("')\n");
-        stringBuilder.append(rule.getDefinition());
-        stringBuilder.append(";\n");
         return stringBuilder.toString();
     }
 }

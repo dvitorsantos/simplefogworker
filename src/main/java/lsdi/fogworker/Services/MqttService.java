@@ -16,7 +16,6 @@ public class MqttService {
     @Value("${mosquitto.clientid}")
     private String clientUuid;
 
-
     private MqttService() {
         options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);

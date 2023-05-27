@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Data
 public class DeployRequest {
+    @Nullable
     @JsonProperty("host_uuid")
     public String hostUuid;
     @Nullable

@@ -23,4 +23,8 @@ public class IotCatalogerService {
         HttpEntity<Object> entity = new HttpEntity<>(request, headers);
         restTemplate.postForObject(url + "/gateway", entity, IoTGatewayRequest.class);
     }
+
+    public IoTGatewayRequest getGateway(String uuid) {
+        return restTemplate.getForObject(url + "/gateway/" + uuid, IoTGatewayRequest.class);
+    }
 }
